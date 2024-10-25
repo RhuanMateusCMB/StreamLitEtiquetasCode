@@ -64,8 +64,6 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 with st.sidebar:
     st.header("GERADOR DE ETIQUETAS CMB")
     arquivo_pedido = st.file_uploader(label="Arraste ou Selecione o Arquivo em PDF do Pedido:", type=['pdf'])
-    
-    st.markdown("[Base de Dados](https://docs.google.com/spreadsheets/d/10xH-WrGzH3efBqlrrUvX4kHotmL-sX19RN3_dn5YqyA/edit?usp=sharing)", unsafe_allow_html=True)
 
 if arquivo_pedido:
     data_fabricacao = data_fabricacao.strftime("%d/%m/%Y")
