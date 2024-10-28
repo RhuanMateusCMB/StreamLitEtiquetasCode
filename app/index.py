@@ -103,13 +103,17 @@ if arquivo_pedido:
                 produto = item["produto"]
                 quantidade = item["quantidade"]
 
+                # Verificar o valor do ProdutoPacote no pacote_dict
+                if pacote_dict.get(produto, 0) == 0:  # Se o valor for 0, pula para o próximo produto
+                    continue
+
                 for i in range(quantidade):
                     fileName = f"{idx+1:03d}_{cliente}_{produto}_{i+1:03d}.pdf".replace('/', '-').replace(' ', '_')
                     documentTitle = cliente
                     title = produto
                     subTitle = 'etiquetas'
                     caminho_completo = os.path.join(pasta_destino, fileName)
-                    
+
                     pdf = canvas.Canvas(caminho_completo)
                     page_width = 9.8 / 2.54 * inch  # Convertendo cm para polegadas e depois para pontos
                     page_height = 2.5 / 2.54 * inch  # Convertendo cm para polegadas e depois para pontos
@@ -142,7 +146,7 @@ if arquivo_pedido:
                     if descricao == "Informações na Embalagem" or descricao == "":
                         pdf.setFont("Helvetica-Bold", 10)
                         pdf.drawCentredString(page_width / 2, page_height - 20, title)
-                        
+
                         # Ajustando o texto da validade e data de fabricação
                         pdf.setFont("Helvetica", 7)
                         pdf.drawString(30, 15, f"{validade}")
