@@ -104,13 +104,14 @@ if arquivo_pedido:
                 quantidade = item["quantidade"]
 
                 # Verificar o valor do ProdutoPacote no pacote_dict
-                if pacote_dict.get(produto, 0) == 0:  # Se o valor for 0, pula para o próximo produto
-                    continue
+                produto_pacote = pacote_dict.get(produto, 0)
+                if produto_pacote == 0:  # Se o valor for 0, pula para o próximo produto
+                    continue  # Pula para o próximo produto sem gerar a etiqueta
 
                 for i in range(quantidade):
                     fileName = f"{idx+1:03d}_{cliente}_{produto}_{i+1:03d}.pdf".replace('/', '-').replace(' ', '_')
                     documentTitle = cliente
-                    title = produto
+                    title = f"{produto} ({produto_pacote} UN)"
                     subTitle = 'etiquetas'
                     caminho_completo = os.path.join(pasta_destino, fileName)
 
