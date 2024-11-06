@@ -9,10 +9,7 @@ from streamlit_gsheets import GSheetsConnection
 from reportlab.lib.units import inch
 from reportlab.pdfgen import canvas
 import PyPDF2
-import pandas as pd
-
-def formatarReferencia(texto):
-    return re.sub(r'\s+|[^a-zA-Z0-9]', '', texto).upper()
+import time
 
 st.set_page_config(
     layout="wide", 
@@ -32,29 +29,35 @@ def extrair_cliente(conteudo_pdf):
             return cliente
     return None
 
-def extrair_itens_pedido(conteudo_pdf):
+def extrair_itens_pedido(conteudo_pdf, pacote_dict):
+    itens_pedido = []
+    padrao_item = r"(\d+)\s-\s(.*?)\s(\d+[\.,]?\d*)\s(UN|KG|und|un|kg|Kg|G|g)"
+    for match in re.finditer(padrao_item, conteudo_pdf):
+        numero_item = match.group(1)
+        produto = match.group(2).strip()
+        quantidade = match.group(3).replace(',', '.')
+        unidade = match.group(4)
 
-    produtos_lista = []
+        # Converter quantidade para float para lidar com valores decimais
+        quantidade = float(quantidade)
 
-    url = "https://docs.google.com/spreadsheets/d/10xH-WrGzH3efBqlrrUvX4kHotmL-sX19RN3_dn5YqyA/gviz/tq?tqx=out:csv"
-    df_excel = pd.read_csv(url)
-            
-    for _, row in df_excel.iterrows():
-        if pd.isna(row['ID']):
-            continue
-
-        codigo_produto = str(int(row['ID']))
-        nome_produto = str(row['Produto']).upper()
-        referencia = f"{codigo_produto} - {nome_produto}"
-
-        if formatarReferencia(referencia) in formatarReferencia(conteudo_pdf):
-            quantidade = 1 
+        # Verificar se o produto está no dicionário pacote_dict
+        if produto in pacote_dict:
+            valor_pacote = pacote_dict[produto]
+            if valor_pacote == 0:
+                    etiquetas_necessarias = 0
+            elif unidade.lower() == 'kg':  # Se o produto for quantificado em kg, tratar como unidade única
+                etiquetas_necessarias = 1
+            else:
+                    etiquetas_necessarias = math.ceil(quantidade / valor_pacote)
+            itens_pedido.append({'produto': produto, 'quantidade': etiquetas_necessarias})
         else:
-            quantidade = 0  
-
-        produtos_lista.append({'produto': nome_produto, 'quantidade': quantidade})
-    return produtos_lista
-
+            # Produto não encontrado no banco de dados
+            st.warning(f"Produto não encontrado no banco de dados: {produto}")
+            # Adicionar o produto com quantidade 1 como padrão
+            itens_pedido.append({'produto': produto, 'quantidade': 1})
+            
+    return itens_pedido
 
 # Interface
 url = "https://docs.google.com/spreadsheets/d/10xH-WrGzH3efBqlrrUvX4kHotmL-sX19RN3_dn5YqyA/edit?usp=sharing"
@@ -64,6 +67,8 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 with st.sidebar:
     st.header("GERADOR DE ETIQUETAS CMB")
     arquivo_pedido = st.file_uploader(label="Arraste ou Selecione o Arquivo em PDF do Pedido:", type=['pdf'])
+
+    st.markdown("[Base de Dados](https://docs.google.com/spreadsheets/d/10xH-WrGzH3efBqlrrUvX4kHotmL-sX19RN3_dn5YqyA/edit?usp=sharing)", unsafe_allow_html=True)
 
 if arquivo_pedido:
     data_fabricacao = data_fabricacao.strftime("%d/%m/%Y")
@@ -83,7 +88,7 @@ if arquivo_pedido:
         # Carregar base de dados dos produtos e extrair itens do pedido
         df_excel = conn.read(spreadsheet=url)
         pacote_dict = dict(zip(df_excel["Produto"], df_excel["ProdutoPacote"]))
-        itens_pedido = extrair_itens_pedido(conteudo_pdf)
+        itens_pedido = extrair_itens_pedido(conteudo_pdf, pacote_dict)
 
         # Diretório para salvar os PDFs
         pasta_destino = "pedidos"
@@ -103,18 +108,13 @@ if arquivo_pedido:
                 produto = item["produto"]
                 quantidade = item["quantidade"]
 
-                # Verificar o valor do ProdutoPacote no pacote_dict
-                produto_pacote = pacote_dict.get(produto, 0)
-                if produto_pacote == 0:  # Se o valor for 0, pula para o próximo produto
-                    continue  # Pula para o próximo produto sem gerar a etiqueta
-
                 for i in range(quantidade):
                     fileName = f"{idx+1:03d}_{cliente}_{produto}_{i+1:03d}.pdf".replace('/', '-').replace(' ', '_')
                     documentTitle = cliente
-                    title = f"{produto} ({produto_pacote} UN)"
+                    title = produto
                     subTitle = 'etiquetas'
                     caminho_completo = os.path.join(pasta_destino, fileName)
-
+                    
                     pdf = canvas.Canvas(caminho_completo)
                     page_width = 9.8 / 2.54 * inch  # Convertendo cm para polegadas e depois para pontos
                     page_height = 2.5 / 2.54 * inch  # Convertendo cm para polegadas e depois para pontos
@@ -147,7 +147,7 @@ if arquivo_pedido:
                     if descricao == "Informações na Embalagem" or descricao == "":
                         pdf.setFont("Helvetica-Bold", 10)
                         pdf.drawCentredString(page_width / 2, page_height - 20, title)
-
+                        
                         # Ajustando o texto da validade e data de fabricação
                         pdf.setFont("Helvetica", 7)
                         pdf.drawString(30, 15, f"{validade}")
