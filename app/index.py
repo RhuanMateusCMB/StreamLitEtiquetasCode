@@ -60,7 +60,7 @@ def extrair_itens_pedido(conteudo_pdf, pacote_dict):
     return itens_pedido
 
 # Interface
-url = "https://docs.google.com/spreadsheets/d/10xH-WrGzH3efBqlrrUvX4kHotmL-sX19RN3_dn5YqyA/edit?usp=sharing"
+url = "https://docs.google.com/spreadsheets/d/10xH-WrGzH3efBqlrrUvX4kHotmL-sX19RN3_dn5YqyA/edit?gid=990865530#gid=990865530"
 
 conn = st.connection("gsheets", type=GSheetsConnection)
 
