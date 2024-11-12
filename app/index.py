@@ -103,12 +103,26 @@ if arquivo_pedido:
 
         # Tamanho da página em pontos (9.8cm de largura x 2.5cm de altura)
         if itens_pedido:
+            # Calcular total de etiquetas
+            total_etiquetas = sum(item["quantidade"] for item in itens_pedido)
+            etiquetas_geradas = 0
+            
+            # Criar barra de progresso
+            progress_bar = st.progress(0)
+            status_text = st.empty()
+
             # Gerar PDFs para cada item do pedido
             for idx, item in enumerate(itens_pedido):
                 produto = item["produto"]
                 quantidade = item["quantidade"]
 
                 for i in range(quantidade):
+                    etiquetas_geradas += 1
+                    # Atualizar barra de progresso
+                    progress = int((etiquetas_geradas / total_etiquetas) * 100)
+                    progress_bar.progress(progress)
+                    status_text.text(f"Gerando etiqueta {etiquetas_geradas} de {total_etiquetas}")
+                    
                     fileName = f"{idx+1:03d}_{cliente}_{produto}_{i+1:03d}.pdf".replace('/', '-').replace(' ', '_')
                     documentTitle = cliente
                     title = produto
