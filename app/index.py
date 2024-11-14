@@ -31,25 +31,27 @@ def extrair_cliente(conteudo_pdf):
 
 def extrair_itens_pedido(conteudo_pdf, pacote_dict):
     itens_pedido = []
-    padrao_item = r"(\d+)\s-\s(.*?)\s(\d+[\.,]?\d*)\s(UN|KG|und|un|kg|Kg|G|g)"
+    padrao_item = r"(\d+(?:\.\d{3})*(?:,\d+)?)\s-\s(.*?)\s(\d+(?:\.\d{3})*(?:,\d+)?)\s(UN|KG|und|un|kg|Kg|G|g)"
+    
     for match in re.finditer(padrao_item, conteudo_pdf):
         numero_item = match.group(1)
         produto = match.group(2).strip()
-        quantidade = match.group(3).replace(',', '.')
+        quantidade_str = match.group(3)
         unidade = match.group(4)
 
-        # Converter quantidade para float para lidar com valores decimais
-        quantidade = float(quantidade)
+        # Remover pontos e substituir vírgula por ponto para converter para float
+        quantidade_str = quantidade_str.replace('.', '').replace(',', '.')
+        quantidade = float(quantidade_str)
 
         # Verificar se o produto está no dicionário pacote_dict
         if produto in pacote_dict:
             valor_pacote = pacote_dict[produto]
             if valor_pacote == 0:
-                    etiquetas_necessarias = 0
+                etiquetas_necessarias = 0
             elif unidade.lower() == 'kg':  # Se o produto for quantificado em kg, tratar como unidade única
                 etiquetas_necessarias = 1
             else:
-                    etiquetas_necessarias = math.ceil(quantidade / valor_pacote)
+                etiquetas_necessarias = math.ceil(quantidade / valor_pacote)
             itens_pedido.append({'produto': produto, 'quantidade': etiquetas_necessarias})
         else:
             # Produto não encontrado no banco de dados
