@@ -48,8 +48,6 @@ def extrair_itens_pedido(conteudo_pdf, pacote_dict):
             valor_pacote = pacote_dict[produto]
             if valor_pacote == 0:
                 etiquetas_necessarias = 0
-            elif unidade.lower() == 'kg':  # Se o produto for quantificado em kg, tratar como unidade única
-                etiquetas_necessarias = 1
             else:
                 etiquetas_necessarias = math.ceil(quantidade / valor_pacote)
             itens_pedido.append({'produto': produto, 'quantidade': etiquetas_necessarias})
