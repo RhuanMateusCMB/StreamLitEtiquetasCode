@@ -37,17 +37,25 @@ def extrair_itens_pedido(conteudo_pdf, pacote_dict):
         numero_item = match.group(1)
         produto = match.group(2).strip()
         quantidade_str = match.group(3)
-        unidade = match.group(4)
+        unidade = match.group(4).upper()
 
         # Remover pontos e substituir vírgula por ponto para converter para float
         quantidade_str = quantidade_str.replace('.', '').replace(',', '.')
         quantidade = float(quantidade_str)
+
+        # Se a unidade for KG, converter para gramas (multiplicar por 1000)
+        if unidade == 'KG':
+            quantidade = quantidade * 1000
 
         # Verificar se o produto está no dicionário pacote_dict
         if produto in pacote_dict:
             valor_pacote = pacote_dict[produto]
             if valor_pacote == 0:
                 etiquetas_necessarias = 0
+            elif unidade == 'KG':  
+                # Para produtos em KG, também multiplicar o valor_pacote por 1000
+                valor_pacote = valor_pacote * 1000
+                etiquetas_necessarias = math.ceil(quantidade / valor_pacote)
             else:
                 etiquetas_necessarias = math.ceil(quantidade / valor_pacote)
             itens_pedido.append({'produto': produto, 'quantidade': etiquetas_necessarias})
