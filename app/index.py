@@ -31,13 +31,21 @@ def extrair_cliente(conteudo_pdf):
 
 def extrair_itens_pedido(conteudo_pdf, pacote_dict):
     itens_pedido = []
-    padrao_item = r"(\d+(?:\.\d{3})*(?:,\d+)?)\s-\s(.*?)\s(\d+(?:\.\d{3})*(?:,\d+)?)\s(UN|KG|und|un|kg|Kg|G|g)"
+    padrao_item = r"(\d+(?:\.\d{3})*(?:,\d+)?)\s-\s(.*?)\s(\d+(?:\.\d{3})*(?:,\d+)?)\s(UN|KG|und|un|kg|Kg|G|g|Un|Und)"
     
     for match in re.finditer(padrao_item, conteudo_pdf):
         numero_item = match.group(1)
         produto = match.group(2).strip()
         quantidade_str = match.group(3)
         unidade = match.group(4).upper()
+
+        # Padronizar todas as variações possíveis de UN
+        if unidade in ['UND', 'UN', 'U', 'Un', 'UN', 'und', 'Und']:
+            unidade = 'UN'
+        elif unidade in ['KG', 'Kg', 'kg']:
+            unidade = 'KG'
+        elif unidade in ['G', 'g']:
+            unidade = 'G'
 
         # Remover pontos e substituir vírgula por ponto para converter para float
         quantidade_str = quantidade_str.replace('.', '').replace(',', '.')
