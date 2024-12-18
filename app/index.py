@@ -29,18 +29,6 @@ def extrair_cliente(conteudo_pdf):
             return cliente
     return None
 
-# def log_to_file(message, filename="processamento_log.txt", mode="a"):
-#     """
-#     Grava mensagens de log em um arquivo.
-#     Args:
-#         message: Mensagem a ser gravada
-#         filename: Nome do arquivo de log
-#         mode: Modo de abertura do arquivo ("a" para append, "w" para sobrescrever)
-#     """
-#     timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-#     with open(filename, mode, encoding='utf-8') as f:
-#         f.write(f"[{timestamp}] {message}\n")
-
 def extrair_itens_pedido(conteudo_pdf, pacote_dict):
     itens_pedido = []
     # Regex atualizado sem o número sequencial inicial
@@ -90,18 +78,11 @@ def extrair_itens_pedido(conteudo_pdf, pacote_dict):
     return itens_pedido
 
 def carregar_dados_produtos(df_excel):
-    # log_to_file("=== CARREGANDO DADOS DOS PRODUTOS ===", mode="w")  # Inicia novo arquivo
-    
     # Converter a coluna ID para string
     df_excel['ID'] = df_excel['ID'].astype(str)
     
     # Criar dicionário usando ID como chave
     pacote_dict = dict(zip(df_excel["ID"], df_excel["ProdutoPacote"]))
-    
-    # log_to_file(f"Total de produtos carregados: {len(pacote_dict)}")
-    # log_to_file("Exemplo de produtos carregados:")
-    # for key, value in list(pacote_dict.items())[:5]:
-    #     log_to_file(f"ID: {key} -> ProdutoPacote: {value}")
     
     return pacote_dict
 
