@@ -43,36 +43,17 @@ def extrair_cliente(conteudo_pdf):
 
 def extrair_itens_pedido(conteudo_pdf, pacote_dict):
     itens_pedido = []
-    # Novo regex mais flexível
-    padrao_item = r"(\d+)\s+(\d+)\s+(.*?)\s+(\d+(?:,\d+)?)\s*(UN|UND|KG|kg|Kg|G|g|Un|Und|un|)?\s+R\$\s*\d+,\d+\s+-----\s+R\$\s*\d+,\d+\s+R\$\s*\d+,\d+"
-    
-    # log_to_file("\n=== CONFIGURAÇÃO INICIAL ===")
-    # log_to_file("Dicionário de produtos carregado:")
-    # for key, value in pacote_dict.items():
-    #     log_to_file(f"ID: {key} -> ProdutoPacote: {value}")
-    
-    # log_to_file("\n=== INICIANDO PROCESSAMENTO DE ITENS ===")
+    # Regex atualizado sem o número sequencial inicial
+    padrao_item = r"(\d+)\s+(.*?)\s+(\d+(?:,\d+)?)\s*(UN|UND|KG|kg|Kg|G|g|Un|Und|un|)?\s+R\$\s*\d+,\d+\s+-----\s+R\$\s*\d+,\d+\s+R\$\s*\d+,\d+"
     
     for linha in conteudo_pdf.split('\n'):
         match = re.search(padrao_item, linha)
         if match:
-            # log_to_file("\n--- NOVO ITEM ENCONTRADO ---")
-            
-            number = match.group(1)
-            id_produto = match.group(2)
-            nome_produto = match.group(3).strip()
-            quantidade_str = match.group(4)
-            # Se a unidade não foi especificada (grupo 5 vazio ou None), assume UN
-            unidade = match.group(5).upper() if match.group(5) else 'UN'
-            
-            # log_to_file(f"Número (#): {number}")
-            # log_to_file(f"ID do Produto (Código): {id_produto}")
-            # log_to_file(f"Nome do Produto: {nome_produto}")
-            # log_to_file(f"Quantidade (string original): {quantidade_str} {unidade}")
-            
-            # log_to_file(f"\nProcurando produto {id_produto}...")
-            # log_to_file(f"Tipo do ID no PDF: {type(id_produto)}")
-            # log_to_file(f"Chaves disponíveis: {list(pacote_dict.keys())[:5]}...")
+            # Grupos atualizados
+            id_produto = str(int(match.group(1)))  # Converte para int e volta para string para remover zeros à esquerda
+            nome_produto = match.group(2).strip()
+            quantidade_str = match.group(3)
+            unidade = match.group(4).upper() if match.group(4) else 'UN'
             
             if unidade in ['UND', 'UN', 'U', 'Un', 'und', 'Und', 'un']:
                 unidade = 'UN'
@@ -82,12 +63,8 @@ def extrair_itens_pedido(conteudo_pdf, pacote_dict):
                 unidade = 'G'
             
             quantidade_produto = float(quantidade_str.replace(',', '.'))
-            # log_to_file(f"Quantidade convertida: {quantidade_produto} {unidade}")
             
             if id_produto in pacote_dict:
-                # log_to_file(f"Produto encontrado na planilha: {id_produto}")
-                # log_to_file(f"Valor do ProdutoPacote: {pacote_dict[id_produto]}")
-                
                 valor_pacote = pacote_dict[id_produto]
                 if valor_pacote == 0:
                     etiquetas_necessarias = 0
@@ -98,23 +75,18 @@ def extrair_itens_pedido(conteudo_pdf, pacote_dict):
                 else:
                     etiquetas_necessarias = math.ceil(quantidade_produto / valor_pacote)
                     
-                # log_to_file(f"Etiquetas necessárias: {etiquetas_necessarias}")
-                
                 item = {
-                    'number': number,
+                    'number': id_produto,  # Usando o ID do produto como number
                     'id_produto': id_produto,
                     'nome_produto': nome_produto,
                     'quantidade_produto': quantidade_produto,
                     'unidade': unidade,
                     'etiquetas_necessarias': etiquetas_necessarias
                 }
-                # log_to_file("\nItem processado:" + str(item))
                 itens_pedido.append(item)
             else:
                 st.warning(f"\nAVISO: Produto não encontrado na base de dados: {id_produto} - {nome_produto}")
     
-    # log_to_file("\n=== PROCESSAMENTO FINALIZADO ===")
-    # log_to_file(f"Total de itens processados: {len(itens_pedido)}")
     return itens_pedido
 
 def carregar_dados_produtos(df_excel):
