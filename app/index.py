@@ -36,8 +36,8 @@ def extrair_itens_pedido(conteudo_pdf, pacote_dict):
         '2969': 'MINI CROISSANT COM TOMATE E SALAME'
     }
     
-    padrao_completo = r'(\d+)\s+(.*?)\s+(\d+)\s*(UN|UND|KG|kg|Kg|G|g|Un|Und|un)\s+R\$\s*\d+,\d+\s+-----\s+R\$\s*\d+,\d+'
-    padrao_sem_nome = r'(\d+)\s+(\d+)\s*(UN|UND|KG|kg|Kg|G|g|Un|Und|un)\s+R\$\s*\d+,\d+\s+-----\s+R\$\s*\d+,\d+'
+    padrao_completo = r'(\d+)\s+(.*?)\s+(\d+,?\d*)\s*(UN|UND|KG|kg|Kg|G|g|Un|Und|un)\s+R\$\s*\d+,\d+\s+-----\s+R\$\s*\d+,\d+'
+    padrao_sem_nome = r'(\d+)\s+(\d+,?\d*)\s*(UN|UND|KG|kg|Kg|G|g|Un|Und|un)\s+R\$\s*\d+,\d+\s+-----\s+R\$\s*\d+,\d+'
     
     for linha in conteudo_pdf.split('\n'):
         try:
