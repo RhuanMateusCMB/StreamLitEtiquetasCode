@@ -33,7 +33,8 @@ def extrair_cliente(conteudo_pdf):
 def extrair_itens_pedido(conteudo_pdf, pacote_dict):
     itens_pedido = []
     produtos_especiais = {
-        '2969': 'MINI CROISSANT COM TOMATE E SALAME'
+        '2969': 'MINI CROISSANT COM TOMATE E SALAME',
+        '3472': 'MINI FOLHADO BAUNILHA E CANELA 25G'
     }
     
     padrao_completo = r'(\d+)\s+(.*?)\s+(\d+,?\d*(?:\s*[gG])?)\s*(UN|UND|KG|kg|Kg|G|g|Un|Und|un|und)?\s+R\$\s*\d+,\d+\s+-----\s+R\$\s*\d+,\d+'
