@@ -101,7 +101,7 @@ def carregar_dados_produtos(df_excel):
     return dict(zip(df_excel["ID"], df_excel["ProdutoPacote"]))
 
 # Interface
-url = ""
+url = "https://docs.google.com/spreadsheets/d/10xH-WrGzH3efBqlrrUvX4kHotmL-sX19RN3_dn5YqyA/edit?gid=990865530#gid=990865530"
 
 conn = st.connection("gsheets", type=GSheetsConnection)
 
